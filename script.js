@@ -1,3 +1,50 @@
+const KontentManagement = window["kontentManagement"];
+
+const managementClient = new KontentManagement.ManagementClient({
+  environmentId: "df1e814e-fec9-02fe-94ef-9413761ffcad",
+  // using CM API key in browser is NOT safe. If you need to use SDK in browsers
+  // you should use proxy server and set authorization header there rather than here
+  apiKey:
+    "API key goes here",
+});
+
+// ??
+async function updateKontentData() {
+  const response = await managementClient
+    .upsertLanguageVariant()
+    .byItemCodename("game_1")
+    .byLanguageCodename("default")
+    .withData((builder) => {
+      return {
+        elements: [
+          builder.textElement({
+            element: { codename: "board" },
+            value: JSON.stringify([]),
+          }),
+        ],
+      };
+    })
+    .toPromise();
+  return response;
+  // const languages = await managementClient.listLanguages().toPromise()
+  // return languages
+}
+
+// Retrieves game state
+async function fetchKontentData() {
+  // const response = await deliveryClient
+  //   .item("game_1")
+  //   .elementsParameter(["board", "current_player", "winner", "draw"])
+  //   .toPromise();
+  // return response.data.item.elements;
+  const response = await managementClient
+    .viewLanguageVariant()
+    .byItemCodename("game_1")
+    .byLanguageCodename("default")
+    .toPromise();
+  return response.data.elements;
+}
+
 // Define draw variable
 let draw = false;
 
@@ -35,6 +82,7 @@ function makeMove(position) {
     if (draw) {
       alert("Game Over, Draw!");
     }
+    // Update Kontent here. Management API??
   }
 }
 
@@ -151,3 +199,11 @@ document.querySelectorAll("td").forEach((el) =>
     makeMove(position);
   })
 );
+
+// ??
+window.addEventListener("load", async () => {
+  const data = await fetchKontentData();
+  console.log(data);
+  const update = await updateKontentData();
+  console.log(update);
+});
